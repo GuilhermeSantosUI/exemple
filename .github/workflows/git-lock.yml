@@ -1,4 +1,4 @@
-name: Git Lock Workflow
+name: Enforce Branch Lock
 
 on:
   push:
@@ -9,18 +9,25 @@ on:
       - main
 
 jobs:
-  git-lock:
+  check-lock:
     runs-on: ubuntu-latest
-    
+
     steps:
-      # Checkout do código
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Torna o script executável
-      - name: Make script executable
-        run: chmod +x git-lock.sh
+      - name: Verificar se a branch está bloqueada
+        run: |
+          LOCK_FILE="branch-lock.json"
+          if [ ! -f "$LOCK_FILE" ]; then
+            echo "Arquivo de bloqueio não encontrado. Assumindo que a branch está desbloqueada."
+            exit 0
+          fi
 
-      # Executa o script
-      - name: Run Git Lock script
-        run: ./git-lock.sh main
+          IS_LOCKED=$(jq -r '.locked' "$LOCK_FILE")
+          if [ "$IS_LOCKED" = "true" ]; then
+            echo "Branch está bloqueada. Push ou merge não é permitido."
+            exit 1
+          fi
+
+          echo "Branch está desbloqueada. Prosseguindo com push ou merge."
