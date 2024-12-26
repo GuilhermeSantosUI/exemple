@@ -1,0 +1,26 @@
+name: Git Lock Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  git-lock:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Checkout do código
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Torna o script executável
+      - name: Make script executable
+        run: chmod +x git-lock.sh
+
+      # Executa o script
+      - name: Run Git Lock script
+        run: ./git-lock.sh main
